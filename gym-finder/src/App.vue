@@ -118,6 +118,7 @@ onMounted(() => {
                     :location="location"
                     :selected="selected?.id === location.id"
                     @select="selected = $event"
+                    @close="selected = null"
                   />
                 </div>
               </div>
