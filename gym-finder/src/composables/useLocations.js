@@ -13,6 +13,28 @@ export function useLocations() {
     return [...new Set(items.filter(Boolean))]
   }
 
+  async function fetchAllEnrichments() {
+    const pageSize = 1000
+    const allRows = []
+
+    for (let from = 0; ; from += pageSize) {
+      const to = from + pageSize - 1
+
+      const { data, error } = await supabase
+        .from('gym_enrichments')
+        .select('*')
+        .range(from, to)
+
+      if (error) throw error
+
+      allRows.push(...(data ?? []))
+
+      if (!data || data.length < pageSize) break
+    }
+
+    return allRows
+  }
+
   async function fetchLocations() {
     loading.value = true
     error.value = null
@@ -26,11 +48,7 @@ export function useLocations() {
       console.log(records[0])
 
       // 2. Fetch enrichments from Supabase
-      const { data: enrichments, error: sbError } = await supabase
-        .from('gym_enrichments')
-        .select('*')
-
-      if (sbError) throw sbError
+      const enrichments = await fetchAllEnrichments()
       console.log('supabase enrichments count', enrichments?.length)
       console.log('supabase sample', enrichments?.slice(0, 5))
 
