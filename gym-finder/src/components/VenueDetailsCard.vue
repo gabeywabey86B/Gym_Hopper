@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-  <section class="flex h-[calc(100vh-3rem)] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white">
+  <section class="flex h-[calc(100vh-3rem)] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white/95 shadow-sm backdrop-blur-sm">
     <div v-if="location">
       <div class="border-b border-gray-100 px-6 pb-4 pt-6">
         <h2 class="text-xl font-semibold text-gray-900">{{ location.name }}</h2>
