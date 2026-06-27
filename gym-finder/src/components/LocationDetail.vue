@@ -1,5 +1,5 @@
 <script setup>
-defineProps({
+const props = defineProps({
   location: Object,
 })
 
@@ -24,50 +24,60 @@ defineEmits(['close'])
     <!-- Facility type badges -->
     <div class="flex flex-wrap gap-1 mt-2">
       <span
-        v-for="type in location.facilityTypes"
-        :key="type"
+        v-for="facility in location.facilityTypes"
+        :key="facility.type"
         class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"
       >
-        {{ type }}
+        {{ facility.type }}
       </span>
     </div>
 
-    <!-- Pricing -->
-    <div class="mt-3 text-sm text-gray-600 space-y-1">
-      <p v-if="location.isFree" class="text-green-600 font-medium">✓ Free entry</p>
-      <p v-else-if="location.dayPassPrice">Day pass: <strong>${{ location.dayPassPrice }}</strong></p>
-      <p v-if="location.membershipPrice">Membership: <strong>${{ location.membershipPrice }}/yr</strong></p>
-      <p v-if="!location.isFree && !location.dayPassPrice && !location.membershipPrice" class="text-gray-400">
-        No pricing info available
-      </p>
-    </div>
+    <div class="mt-4 space-y-4">
+      <section
+        v-for="facility in props.location.facilityTypes"
+        :key="facility.type"
+        class="border rounded-lg p-3"
+      >
+        <h3 class="font-medium text-sm text-gray-800">{{ facility.type }}</h3>
 
-    <!-- Equipment -->
-    <div v-if="location.equipment?.length" class="mt-3">
-      <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Equipment</p>
-      <div class="flex flex-wrap gap-1">
-        <span
-          v-for="item in location.equipment"
-          :key="item"
-          class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
-        >
-          {{ item }}
-        </span>
-      </div>
-    </div>
+        <div class="mt-2 text-sm text-gray-600 space-y-1">
+          <p v-if="facility.isFree" class="text-green-600 font-medium">✓ Free entry</p>
+          <p v-if="facility.dayPassPrice !== null">Day pass: <strong>${{ facility.dayPassPrice }}</strong></p>
+          <p v-if="facility.membershipPrice !== null">Membership: <strong>${{ facility.membershipPrice }}/yr</strong></p>
+          <p
+            v-if="!facility.isFree && facility.dayPassPrice === null && facility.membershipPrice === null"
+            class="text-gray-400"
+          >
+            No pricing info available
+          </p>
+        </div>
 
-    <!-- Facilities -->
-    <div v-if="location.facilities?.length" class="mt-3">
-      <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Facilities</p>
-      <div class="flex flex-wrap gap-1">
-        <span
-          v-for="item in location.facilities"
-          :key="item"
-          class="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded"
-        >
-          {{ item }}
-        </span>
-      </div>
+        <div v-if="facility.equipment?.length" class="mt-3">
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Equipment</p>
+          <div class="flex flex-wrap gap-1">
+            <span
+              v-for="item in facility.equipment"
+              :key="item"
+              class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+            >
+              {{ item }}
+            </span>
+          </div>
+        </div>
+
+        <div v-if="facility.amenities?.length" class="mt-3">
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Amenities</p>
+          <div class="flex flex-wrap gap-1">
+            <span
+              v-for="item in facility.amenities"
+              :key="item"
+              class="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded"
+            >
+              {{ item }}
+            </span>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>

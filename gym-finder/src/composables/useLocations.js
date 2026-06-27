@@ -9,6 +9,10 @@ export function useLocations() {
   const loading = ref(false)
   const error = ref(null)
 
+  function uniqueItems(items = []) {
+    return [...new Set(items.filter(Boolean))]
+  }
+
   async function fetchLocations() {
     loading.value = true
     error.value = null
@@ -30,10 +34,13 @@ export function useLocations() {
       console.log('supabase enrichments count', enrichments?.length)
       console.log('supabase sample', enrichments?.slice(0, 5))
 
-      // 3. Build enrichment lookup by postal code
+      // 3. Build enrichment lookup by postal code + facility type
       const enrichmentMap = {}
       for (const e of enrichments ?? []) {
-        enrichmentMap[String(e.postal_code || '').trim()] = e
+        const postalCode = String(e.postal_code || '').trim()
+        const facilityType = String(e.facility_type || '').trim()
+        const key = `${postalCode}::${facilityType}`
+        enrichmentMap[key] = e
       }
       console.log('enrichment keys sample', Object.keys(enrichmentMap).slice(0, 20))
       console.log('first gov postal codes', records.slice(0, 20).map(r => r.PostalCode))
@@ -43,13 +50,15 @@ export function useLocations() {
         .filter(r => r.Latitude && r.Longitude)
         .map((r, i) => {
           const postalCode = String(r.PostalCode || '').trim()
-          const enrichment = enrichmentMap[postalCode] ?? {}
+          const facilityType = String(r.SportsFacility || '').trim()
+          const enrichment = enrichmentMap[`${postalCode}::${facilityType}`] ?? {}
           if (i < 20) {
             console.log('join check', {
               gymName: r.VenueName,
               govPostal: r.PostalCode,
               normalizedPostal: postalCode,
-              foundSupabaseData: Boolean(enrichmentMap[postalCode]),
+              facilityType,
+              foundSupabaseData: Boolean(enrichmentMap[`${postalCode}::${facilityType}`]),
               supabaseData: enrichment,
             })
           }
@@ -59,28 +68,48 @@ export function useLocations() {
             postalCode,
             lat: parseFloat(r.Latitude),
             lng: parseFloat(r.Longitude),
-            facilityTypes: r.SportsFacility
-              ? r.SportsFacility.split(',').map(s => s.trim())
-              : [],
-            membershipPrice: enrichment.membership_price ?? null,
-            dayPassPrice: enrichment.day_pass_price ?? null,
-            equipment: enrichment.equipment ?? [],
-            facilities: enrichment.facilities ?? [],
-            isFree: !enrichment.day_pass_price && !enrichment.membership_price,
+            facilityTypes: facilityType ? [{
+              type: facilityType,
+              equipment: enrichment.equipment ?? [],
+              amenities: enrichment.amenities ?? [],
+              dayPassPrice: enrichment.day_pass_price ?? null,
+              membershipPrice: enrichment.membership_price ?? null,
+              isFree: !enrichment.day_pass_price && !enrichment.membership_price,
+            }] : [],
           }
         })
 
         const grouped = {}
         for (const loc of mapped) {
           if (grouped[loc.postalCode]) {
-            // Merge facility types without duplicates
             const existing = grouped[loc.postalCode]
-            existing.facilityTypes = [
-              ...new Set([...existing.facilityTypes, ...loc.facilityTypes])
-            ]
-            // Keep the name of the first one, or pick the shortest/most generic
+            for (const facility of loc.facilityTypes) {
+              const existingFacility = existing.facilityTypes.find(
+                item => item.type === facility.type
+              )
+
+              if (existingFacility) {
+                existingFacility.equipment = uniqueItems([
+                  ...existingFacility.equipment,
+                  ...facility.equipment,
+                ])
+                existingFacility.amenities = uniqueItems([
+                  ...existingFacility.amenities,
+                  ...facility.amenities,
+                ])
+                existingFacility.dayPassPrice ??= facility.dayPassPrice
+                existingFacility.membershipPrice ??= facility.membershipPrice
+                existingFacility.isFree =
+                  !existingFacility.dayPassPrice && !existingFacility.membershipPrice
+              } else {
+                existing.facilityTypes.push({ ...facility })
+              }
+            }
           } else {
-            grouped[loc.postalCode] = { ...loc }
+            grouped[loc.postalCode] = {
+              ...loc,
+              facilityTypes: loc.facilityTypes.map(facility => ({ ...facility })),
+            }
           }
         }
 
