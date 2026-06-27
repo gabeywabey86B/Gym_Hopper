@@ -56,24 +56,29 @@ onMounted(() => {
       />
 
       <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-        <div v-if="isSearching" class="grid gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-          <section class="min-h-[24rem] rounded-2xl border border-gray-200 bg-white p-4">
-            <div class="mb-4 border-b border-gray-100 pb-3">
+        <div
+          v-if="isSearching"
+          class="grid max-w-[56rem] gap-6 lg:grid-cols-2"
+        >
+          <section class="flex h-[calc(100vh-3rem)] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            <div class="border-b border-gray-100 px-4 pb-3 pt-4">
               <p class="text-xs font-medium uppercase tracking-wide text-gray-400">Venues</p>
               <p class="mt-1 text-sm text-gray-600">{{ filteredLocations.length }} venues found</p>
             </div>
 
-            <div v-if="filteredLocations.length" class="flex flex-col gap-3">
-              <VenueCard
-                v-for="location in filteredLocations"
-                :key="location.id"
-                :location="location"
-                :selected="selected?.id === location.id"
-                @select="selected = $event"
-              />
+            <div v-if="filteredLocations.length" class="flex-1 overflow-y-auto p-4">
+              <div class="flex flex-col gap-3">
+                <VenueCard
+                  v-for="location in filteredLocations"
+                  :key="location.id"
+                  :location="location"
+                  :selected="selected?.id === location.id"
+                  @select="selected = $event"
+                />
+              </div>
             </div>
 
-            <div v-else class="flex min-h-[16rem] items-center justify-center">
+            <div v-else class="flex flex-1 items-center justify-center p-4">
               <div class="max-w-xs text-center">
                 <h2 class="text-base font-medium text-gray-900">No matching venues</h2>
                 <p class="mt-2 text-sm text-gray-500">
@@ -84,6 +89,7 @@ onMounted(() => {
           </section>
 
           <VenueDetailsCard
+            v-if="selected"
             :location="selected"
             :has-results="filteredLocations.length > 0"
           />
