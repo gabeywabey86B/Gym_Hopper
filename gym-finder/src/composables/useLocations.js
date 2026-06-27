@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import Papa from 'papaparse'
 import { supabase } from '../lib/supabase.js'
 
-const CSV_URL = 'https://data.gov.sg/api/action/datastore_search?resource_id=d_2cfb0867cdeb2b7303068995699dc33b'
+const CSV_URL = 'https://data.gov.sg/api/action/datastore_search?resource_id=d_2cfb0867cdeb2b7303068995699dc33b&limit=5000'
 
 export function useLocations() {
   const locations = ref([])
@@ -18,6 +18,7 @@ export function useLocations() {
       const res = await fetch(CSV_URL)
       const json = await res.json()
       const records = json.result.records
+      console.log(records[0])
 
       // 2. Fetch enrichments from Supabase
       const { data: enrichments, error: sbError } = await supabase
@@ -34,17 +35,17 @@ export function useLocations() {
 
       // 4. Merge and map to unified location objects
       locations.value = records
-        .filter(r => r.LATITUDE && r.LONGITUDE)
+        .filter(r => r.Latitude && r.Longitude)
         .map((r, i) => {
-          const enrichment = enrichmentMap[r.POSTALCODE] ?? {}
+          const enrichment = enrichmentMap[r.PostalCode] ?? {}
           return {
             id: i,
-            name: r.FACILITYNAME ?? r.NAME,
-            postalCode: r.POSTALCODE,
-            lat: parseFloat(r.LATITUDE),
-            lng: parseFloat(r.LONGITUDE),
-            facilityTypes: r.SPORTSFACILITY
-              ? r.SPORTSFACILITY.split(',').map(s => s.trim())
+            name: r.VenueName,
+            postalCode: r.PostalCode,
+            lat: parseFloat(r.Latitude),
+            lng: parseFloat(r.Longitude),
+            facilityTypes: r.SportsFacility
+              ? r.SportsFacility.split(',').map(s => s.trim())
               : [],
             membershipPrice: enrichment.membership_price ?? null,
             dayPassPrice: enrichment.day_pass_price ?? null,
