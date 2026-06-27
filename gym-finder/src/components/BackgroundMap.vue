@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, watch } from 'vue'
 import { LCircleMarker, LMap, LTileLayer } from '@vue-leaflet/vue-leaflet'
 
 const props = defineProps({
@@ -16,16 +16,18 @@ const props = defineProps({
 defineEmits(['select'])
 
 const singaporeCenter = [1.3521, 103.8198]
+const defaultZoom = 11
+const selectedZoom = 13
 
-const mapCenter = computed(() => {
-  if (props.selectedLocation?.lat && props.selectedLocation?.lng) {
-    return [props.selectedLocation.lat, props.selectedLocation.lng]
+const mapCenter = ref(singaporeCenter)
+const mapZoom = ref(defaultZoom)
+
+watch(() => props.selectedLocation, (location) => {
+  if (location?.lat && location?.lng) {
+    mapCenter.value = [location.lat, location.lng]
+    mapZoom.value = selectedZoom
   }
-
-  return singaporeCenter
-})
-
-const mapZoom = computed(() => (props.selectedLocation ? 13 : 11))
+}, { immediate: true })
 </script>
 
 <template>
