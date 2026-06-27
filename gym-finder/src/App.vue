@@ -106,14 +106,6 @@ onMounted(() => {
             />
           </div>
 
-          <div v-else class="flex min-h-[calc(100vh-3rem)] items-center justify-center">
-            <div class="max-w-md rounded-2xl border border-white/60 bg-white/92 px-8 py-10 text-center shadow-sm backdrop-blur-sm">
-              <h2 class="text-lg font-medium text-gray-900">Start with a search</h2>
-              <p class="mt-2 text-sm text-gray-500">
-                Use the sidebar search field to find venues by name or facility type.
-              </p>
-            </div>
-          </div>
         </div>
       </main>
     </div>
