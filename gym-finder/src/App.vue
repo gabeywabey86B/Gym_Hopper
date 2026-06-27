@@ -93,7 +93,7 @@ onMounted(() => {
         :equipment="filters.equipment"
         :equipment-options="equipmentOptions"
         :has-active-filters="hasActiveFilters"
-        title="Gym Finder SG"
+        title="Gym Hopper"
         @toggle="sidebarOpen = !sidebarOpen"
         @search="sidebarOpen = true"
         @update:query="filters.query = $event"

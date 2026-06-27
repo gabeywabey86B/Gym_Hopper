@@ -18,6 +18,8 @@ defineEmits(['select'])
 const singaporeCenter = [1.3521, 103.8198]
 const defaultZoom = 11
 const selectedZoom = 13
+const tileUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+const tileAttribution = '&copy; OpenStreetMap contributors &copy; CARTO'
 
 const mapCenter = ref(singaporeCenter)
 const mapZoom = ref(defaultZoom)
@@ -37,11 +39,11 @@ watch(() => props.selectedLocation, (location) => {
       :zoom="mapZoom"
       :use-global-leaflet="false"
       :zoom-control="false"
-      class="h-full w-full"
+      class="minimal-map h-full w-full"
     >
       <LTileLayer
-        attribution="&copy; OpenStreetMap contributors"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        :attribution="tileAttribution"
+        :url="tileUrl"
       />
 
       <LCircleMarker
@@ -58,3 +60,29 @@ watch(() => props.selectedLocation, (location) => {
     </LMap>
   </div>
 </template>
+
+<style scoped>
+:deep(.minimal-map) {
+  background: #f5f5f2;
+}
+
+:deep(.minimal-map .leaflet-control-container) {
+  display: none;
+}
+
+:deep(.minimal-map .leaflet-tile-pane) {
+  filter: saturate(0.72) contrast(1.02) brightness(1.03);
+  opacity: 0.92;
+}
+
+:deep(.minimal-map .leaflet-overlay-pane) {
+  filter: saturate(0.9);
+}
+
+:deep(.minimal-map .leaflet-pane),
+:deep(.minimal-map .leaflet-tile),
+:deep(.minimal-map .leaflet-marker-icon),
+:deep(.minimal-map .leaflet-marker-shadow) {
+  transition: filter 180ms ease, opacity 180ms ease;
+}
+</style>
