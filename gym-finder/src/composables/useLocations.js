@@ -1,0 +1,65 @@
+import { ref } from 'vue'
+import Papa from 'papaparse'
+import { supabase } from '../lib/supabase.js'
+
+const CSV_URL = 'https://data.gov.sg/api/action/datastore_search?resource_id=d_2cfb0867cdeb2b7303068995699dc33b'
+
+export function useLocations() {
+  const locations = ref([])
+  const loading = ref(false)
+  const error = ref(null)
+
+  async function fetchLocations() {
+    loading.value = true
+    error.value = null
+
+    try {
+      // 1. Fetch from data.gov.sg
+      const res = await fetch(CSV_URL)
+      const json = await res.json()
+      const records = json.result.records
+
+      // 2. Fetch enrichments from Supabase
+      const { data: enrichments, error: sbError } = await supabase
+        .from('gym_enrichments')
+        .select('*')
+
+      if (sbError) throw sbError
+
+      // 3. Build enrichment lookup by postal code
+      const enrichmentMap = {}
+      for (const e of enrichments ?? []) {
+        enrichmentMap[e.postal_code] = e
+      }
+
+      // 4. Merge and map to unified location objects
+      locations.value = records
+        .filter(r => r.LATITUDE && r.LONGITUDE)
+        .map((r, i) => {
+          const enrichment = enrichmentMap[r.POSTALCODE] ?? {}
+          return {
+            id: i,
+            name: r.FACILITYNAME ?? r.NAME,
+            postalCode: r.POSTALCODE,
+            lat: parseFloat(r.LATITUDE),
+            lng: parseFloat(r.LONGITUDE),
+            facilityTypes: r.SPORTSFACILITY
+              ? r.SPORTSFACILITY.split(',').map(s => s.trim())
+              : [],
+            membershipPrice: enrichment.membership_price ?? null,
+            dayPassPrice: enrichment.day_pass_price ?? null,
+            equipment: enrichment.equipment ?? [],
+            facilities: enrichment.facilities ?? [],
+            isFree: !enrichment.day_pass_price && !enrichment.membership_price,
+          }
+        })
+    } catch (err) {
+      error.value = err.message
+      console.error('Failed to load locations:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return { locations, loading, error, fetchLocations }
+}
