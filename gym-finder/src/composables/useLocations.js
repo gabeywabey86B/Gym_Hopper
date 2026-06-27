@@ -34,7 +34,7 @@ export function useLocations() {
       }
 
       // 4. Merge and map to unified location objects
-      locations.value = records
+      const mapped = records
         .filter(r => r.Latitude && r.Longitude)
         .map((r, i) => {
           const enrichment = enrichmentMap[r.PostalCode] ?? {}
@@ -54,6 +54,22 @@ export function useLocations() {
             isFree: !enrichment.day_pass_price && !enrichment.membership_price,
           }
         })
+
+        const grouped = {}
+        for (const loc of mapped) {
+          if (grouped[loc.postalCode]) {
+            // Merge facility types without duplicates
+            const existing = grouped[loc.postalCode]
+            existing.facilityTypes = [
+              ...new Set([...existing.facilityTypes, ...loc.facilityTypes])
+            ]
+            // Keep the name of the first one, or pick the shortest/most generic
+          } else {
+            grouped[loc.postalCode] = { ...loc }
+          }
+        }
+
+        locations.value = Object.values(grouped)
     } catch (err) {
       error.value = err.message
       console.error('Failed to load locations:', err)
