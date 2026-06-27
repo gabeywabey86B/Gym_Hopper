@@ -18,6 +18,7 @@ export function useLocations() {
       const res = await fetch(CSV_URL)
       const json = await res.json()
       const records = json.result.records
+      console.log('gov sample', records.slice(0, 5))
       console.log(records[0])
 
       // 2. Fetch enrichments from Supabase
@@ -26,22 +27,36 @@ export function useLocations() {
         .select('*')
 
       if (sbError) throw sbError
+      console.log('supabase enrichments count', enrichments?.length)
+      console.log('supabase sample', enrichments?.slice(0, 5))
 
       // 3. Build enrichment lookup by postal code
       const enrichmentMap = {}
       for (const e of enrichments ?? []) {
-        enrichmentMap[e.postal_code] = e
+        enrichmentMap[String(e.postal_code || '').trim()] = e
       }
+      console.log('enrichment keys sample', Object.keys(enrichmentMap).slice(0, 20))
+      console.log('first gov postal codes', records.slice(0, 20).map(r => r.PostalCode))
 
       // 4. Merge and map to unified location objects
       const mapped = records
         .filter(r => r.Latitude && r.Longitude)
         .map((r, i) => {
-          const enrichment = enrichmentMap[r.PostalCode] ?? {}
+          const postalCode = String(r.PostalCode || '').trim()
+          const enrichment = enrichmentMap[postalCode] ?? {}
+          if (i < 20) {
+            console.log('join check', {
+              gymName: r.VenueName,
+              govPostal: r.PostalCode,
+              normalizedPostal: postalCode,
+              foundSupabaseData: Boolean(enrichmentMap[postalCode]),
+              supabaseData: enrichment,
+            })
+          }
           return {
             id: i,
             name: r.VenueName,
-            postalCode: r.PostalCode,
+            postalCode,
             lat: parseFloat(r.Latitude),
             lng: parseFloat(r.Longitude),
             facilityTypes: r.SportsFacility
@@ -69,7 +84,14 @@ export function useLocations() {
           }
         }
 
-        locations.value = Object.values(grouped)
+        // locations.value = Object.values(grouped)
+
+        const aggregated = Object.values(grouped)
+        console.log('after aggregation', aggregated)
+        console.table(aggregated)
+        window.__aggregatedLocations = aggregated
+
+        locations.value = aggregated
     } catch (err) {
       error.value = err.message
       console.error('Failed to load locations:', err)
