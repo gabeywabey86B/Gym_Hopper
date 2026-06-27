@@ -64,14 +64,19 @@ onMounted(() => {
         <BackgroundMap
           :locations="mapLocations"
           :selected-location="selected"
+          @select="selected = $event"
         />
 
-        <div class="relative z-[1000] px-4 py-6 sm:px-6 lg:px-8">
+        <div class="pointer-events-none absolute inset-0 z-[1000] px-4 py-6 sm:px-6 lg:px-8">
           <div
-          v-if="isSearching"
-          class="grid max-w-[56rem] gap-6 lg:grid-cols-2"
+            v-if="isSearching || selected"
+            class="grid gap-6 pointer-events-auto"
+            :class="isSearching ? 'max-w-[56rem] lg:grid-cols-2' : 'max-w-[28rem]'"
           >
-            <section class="flex h-[calc(100vh-3rem)] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white/95 shadow-sm backdrop-blur-sm">
+            <section
+              v-if="isSearching"
+              class="flex h-[calc(100vh-3rem)] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white/95 shadow-sm backdrop-blur-sm"
+            >
               <div class="border-b border-gray-100 px-4 pb-3 pt-4">
                 <p class="text-xs font-medium uppercase tracking-wide text-gray-400">Venues</p>
                 <p class="mt-1 text-sm text-gray-600">{{ filteredLocations.length }} venues found</p>
@@ -103,6 +108,7 @@ onMounted(() => {
               v-if="selected"
               :location="selected"
               :has-results="filteredLocations.length > 0"
+              @close="selected = null"
             />
           </div>
 

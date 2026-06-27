@@ -13,6 +13,8 @@ const props = defineProps({
   },
 })
 
+defineEmits(['select'])
+
 const singaporeCenter = [1.3521, 103.8198]
 
 const mapCenter = computed(() => {
@@ -49,6 +51,7 @@ const mapZoom = computed(() => (props.selectedLocation ? 13 : 11))
         :fill-color="selectedLocation?.id === location.id ? '#3b82f6' : '#111827'"
         :fill-opacity="0.85"
         :weight="2"
+        @click="$emit('select', location)"
       />
     </LMap>
   </div>
