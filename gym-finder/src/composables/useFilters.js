@@ -1,26 +1,9 @@
 import { computed, unref } from 'vue'
 
-const EQUIPMENT_LEVELS = {
-  none: 0,
-  basic: 1,
-  standard: 2,
-  full: 3,
-}
+function matchesEquipment(facility, selectedEquipment) {
+  if (!selectedEquipment || selectedEquipment === 'any') return true
 
-function getEquipmentLevel(facility) {
-  const equipmentCount = facility.equipment?.length ?? 0
-
-  if (equipmentCount === 0) return 'none'
-  if (equipmentCount <= 3) return 'basic'
-  if (equipmentCount <= 5) return 'standard'
-  return 'full'
-}
-
-function matchesMinimumEquipmentLevel(facility, minimumLevel) {
-  if (!minimumLevel || minimumLevel === 'any') return true
-
-  const facilityLevel = getEquipmentLevel(facility)
-  return EQUIPMENT_LEVELS[facilityLevel] >= EQUIPMENT_LEVELS[minimumLevel]
+  return (facility.equipment ?? []).some((item) => item === selectedEquipment)
 }
 
 export function useFilters(locations, filters) {
@@ -49,7 +32,7 @@ export function useFilters(locations, filters) {
           }
         }
 
-        if (!matchesMinimumEquipmentLevel(facility, activeFilters.equipmentLevel)) return false
+        if (!matchesEquipment(facility, activeFilters.equipment)) return false
 
         return true
       })

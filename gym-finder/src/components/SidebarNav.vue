@@ -20,9 +20,13 @@ defineProps({
     type: Number,
     default: null,
   },
-  equipmentLevel: {
+  equipment: {
     type: String,
     default: 'any',
+  },
+  equipmentOptions: {
+    type: Array,
+    default: () => [],
   },
   hasActiveFilters: {
     type: Boolean,
@@ -37,7 +41,7 @@ const emit = defineEmits([
   'update:query',
   'update:free-only',
   'update:max-day-pass-price',
-  'update:equipment-level',
+  'update:equipment',
 ])
 
 function updateMaxDayPassPrice(event) {
@@ -105,15 +109,19 @@ function updateMaxDayPassPrice(event) {
             <label class="grid gap-1 text-xs font-medium uppercase tracking-wide text-gray-500">
               Equipment
               <select
-                :value="equipmentLevel"
+                :value="equipment"
                 class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-normal tracking-normal text-gray-900 outline-none transition focus:border-gray-300"
                 @focus="$emit('search')"
-                @change="$emit('update:equipment-level', $event.target.value)"
+                @change="$emit('update:equipment', $event.target.value)"
               >
                 <option value="any">Any</option>
-                <option value="basic">Basic+</option>
-                <option value="standard">Standard+</option>
-                <option value="full">Full</option>
+                <option
+                  v-for="item in equipmentOptions"
+                  :key="item"
+                  :value="item"
+                >
+                  {{ item }}
+                </option>
               </select>
             </label>
 

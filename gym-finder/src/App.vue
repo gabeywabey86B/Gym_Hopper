@@ -14,15 +14,29 @@ const filters = reactive({
   query: '',
   freeOnly: false,
   maxDayPassPrice: null,
-  equipmentLevel: 'any',
+  equipment: 'any',
 })
 const { filteredLocations } = useFilters(locations, filters)
+
+const equipmentOptions = computed(() => {
+  const options = new Set()
+
+  for (const location of locations.value) {
+    for (const facility of location.facilityTypes ?? []) {
+      for (const item of facility.equipment ?? []) {
+        if (item) options.add(item)
+      }
+    }
+  }
+
+  return [...options].sort((left, right) => left.localeCompare(right))
+})
 
 const hasActiveFilters = computed(() => (
   filters.query.trim().length > 0
   || filters.freeOnly
   || filters.maxDayPassPrice !== null
-  || filters.equipmentLevel !== 'any'
+  || filters.equipment !== 'any'
 ))
 
 const mapLocations = computed(() => (
@@ -33,7 +47,7 @@ function resetFilters() {
   filters.query = ''
   filters.freeOnly = false
   filters.maxDayPassPrice = null
-  filters.equipmentLevel = 'any'
+  filters.equipment = 'any'
 }
 
 watch(filters, () => {
@@ -61,7 +75,8 @@ onMounted(() => {
         :query="filters.query"
         :free-only="filters.freeOnly"
         :max-day-pass-price="filters.maxDayPassPrice"
-        :equipment-level="filters.equipmentLevel"
+        :equipment="filters.equipment"
+        :equipment-options="equipmentOptions"
         :has-active-filters="hasActiveFilters"
         title="Gym Finder SG"
         @toggle="sidebarOpen = !sidebarOpen"
@@ -69,7 +84,7 @@ onMounted(() => {
         @update:query="filters.query = $event"
         @update:free-only="filters.freeOnly = $event"
         @update:max-day-pass-price="filters.maxDayPassPrice = $event"
-        @update:equipment-level="filters.equipmentLevel = $event"
+        @update:equipment="filters.equipment = $event"
         @reset-filters="resetFilters"
       />
 
