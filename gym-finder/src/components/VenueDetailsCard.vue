@@ -1,0 +1,101 @@
+<script setup>
+defineProps({
+  location: {
+    type: Object,
+    default: null,
+  },
+  hasResults: {
+    type: Boolean,
+    default: false,
+  },
+})
+</script>
+
+<template>
+  <section class="min-h-[24rem] rounded-2xl border border-gray-200 bg-white p-6">
+    <div v-if="location">
+      <h2 class="text-xl font-semibold text-gray-900">{{ location.name }}</h2>
+      <p class="mt-1 text-sm text-gray-500">Postal code: {{ location.postalCode || 'N/A' }}</p>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span
+          v-for="facility in location.facilityTypes"
+          :key="facility.type"
+          class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700"
+        >
+          {{ facility.type }}
+        </span>
+      </div>
+
+      <div class="mt-6 space-y-4">
+        <section
+          v-for="facility in location.facilityTypes"
+          :key="facility.type"
+          class="rounded-xl border border-gray-200 p-4"
+        >
+          <h3 class="text-sm font-medium text-gray-900">{{ facility.type }}</h3>
+
+          <div class="mt-3 space-y-1 text-sm text-gray-600">
+            <p>Free: <span class="font-medium text-gray-800">{{ facility.isFree ? 'Yes' : 'No' }}</span></p>
+            <p>
+              Day pass:
+              <span class="font-medium text-gray-800">
+                {{ facility.dayPassPrice !== null ? `$${facility.dayPassPrice}` : 'No pricing info' }}
+              </span>
+            </p>
+            <p>
+              Membership:
+              <span class="font-medium text-gray-800">
+                {{ facility.membershipPrice !== null ? `$${facility.membershipPrice}/yr` : 'No pricing info' }}
+              </span>
+            </p>
+          </div>
+
+          <div class="mt-4">
+            <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">Equipment</p>
+            <div class="flex flex-wrap gap-1">
+              <span
+                v-for="item in facility.equipment?.length ? facility.equipment : ['No equipment listed']"
+                :key="item"
+                class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+              >
+                {{ item }}
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">Amenities</p>
+            <div class="flex flex-wrap gap-1">
+              <span
+                v-for="item in facility.amenities?.length ? facility.amenities : ['No amenities listed']"
+                :key="item"
+                class="rounded bg-green-50 px-2 py-0.5 text-xs text-green-700"
+              >
+                {{ item }}
+              </span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div v-else-if="hasResults" class="flex h-full min-h-[24rem] items-center justify-center">
+      <div class="max-w-sm text-center">
+        <h2 class="text-lg font-medium text-gray-900">Select a venue</h2>
+        <p class="mt-2 text-sm text-gray-500">
+          Choose a search result to inspect facility types, equipment, amenities, and pricing.
+        </p>
+      </div>
+    </div>
+
+    <div v-else class="flex h-full min-h-[24rem] items-center justify-center">
+      <div class="max-w-sm text-center">
+        <h2 class="text-lg font-medium text-gray-900">No venue selected</h2>
+        <p class="mt-2 text-sm text-gray-500">
+          Details will appear here when a matching venue is selected.
+        </p>
+      </div>
+    </div>
+  </section>
+</template>
