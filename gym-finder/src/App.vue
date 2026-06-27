@@ -121,8 +121,33 @@ onMounted(() => {
               class="flex h-[calc(100vh-3rem)] min-h-[32rem] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white/95 shadow-sm backdrop-blur-sm"
             >
               <div class="border-b border-gray-100 px-4 pb-3 pt-4">
-                <p class="text-xs font-medium uppercase tracking-wide text-gray-400">Venues</p>
-                <p class="mt-1 text-sm text-gray-600">{{ filteredLocations.length }} venues found</p>
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400">Venues</p>
+                    <p class="mt-1 text-sm text-gray-600">{{ filteredLocations.length }} venues found</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+                    aria-label="Close filtered venues"
+                    @click="resetFilters"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 20 20"
+                      class="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                    >
+                      <path d="M5 5l10 10" />
+                      <path d="M15 5L5 15" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div v-if="filteredLocations.length" class="flex-1 overflow-y-auto p-4">
