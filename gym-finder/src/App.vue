@@ -10,6 +10,7 @@ import VenueDetailsCard from './components/VenueDetailsCard.vue'
 const { locations, loading, error, fetchLocations } = useLocations()
 const selected = ref(null)
 const sidebarOpen = ref(true)
+const preserveSelectionOnFilterReset = ref(false)
 const filters = reactive({
   query: '',
   freeOnly: false,
@@ -50,7 +51,21 @@ function resetFilters() {
   filters.equipment = 'any'
 }
 
+function handleMapSelect(location) {
+  if (hasActiveFilters.value) {
+    preserveSelectionOnFilterReset.value = true
+    resetFilters()
+  }
+
+  selected.value = location
+}
+
 watch(filters, () => {
+  if (preserveSelectionOnFilterReset.value) {
+    preserveSelectionOnFilterReset.value = false
+    return
+  }
+
   selected.value = null
 }, { deep: true })
 
@@ -92,7 +107,7 @@ onMounted(() => {
         <BackgroundMap
           :locations="mapLocations"
           :selected-location="selected"
-          @select="selected = $event"
+          @select="handleMapSelect"
         />
 
         <div class="pointer-events-none absolute inset-0 z-[1000] px-4 py-6 sm:px-6 lg:px-8">
