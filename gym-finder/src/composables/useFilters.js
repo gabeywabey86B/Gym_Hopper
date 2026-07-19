@@ -1,27 +1,51 @@
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
+
+function matchesEquipment(facility, selectedEquipment) {
+  if (!selectedEquipment || selectedEquipment === 'any') return true
+
+  return (facility.equipment ?? []).some((item) => item === selectedEquipment)
+}
 
 export function useFilters(locations, filters) {
   const filteredLocations = computed(() => {
-    return locations.value.filter(loc => {
-      // Facility type filter
-      if (filters.value.facilityType) {
-        if (!loc.facilityTypes.some(f => f.type === filters.value.facilityType)) return false
-      }
+    const sourceLocations = unref(locations) ?? []
+    const activeFilters = unref(filters) ?? {}
+    const normalizedQuery = activeFilters.query?.trim().toLowerCase() ?? ''
+    const maxDayPassPrice = activeFilters.maxDayPassPrice
 
-      // Free only filter
-      if (filters.value.freeOnly) {
-        if (!loc.facilityTypes.some(f => f.isFree)) return false
-      }
+    return sourceLocations.reduce((results, location) => {
+      const venueNameMatch = normalizedQuery
+        ? location.name?.toLowerCase().includes(normalizedQuery)
+        : true
 
-      // Max price filter
-      if (filters.value.maxPrice !== null) {
-        if (!loc.facilityTypes.some(f => f.dayPassPrice !== null && f.dayPassPrice <= filters.value.maxPrice)) {
-          return false
+      const matchingFacilities = (location.facilityTypes ?? []).filter((facility) => {
+        const facilityTypeMatch = normalizedQuery
+          ? facility.type?.toLowerCase().includes(normalizedQuery)
+          : true
+
+        if (normalizedQuery && !venueNameMatch && !facilityTypeMatch) return false
+        if (activeFilters.freeOnly && !facility.isFree) return false
+
+        if (maxDayPassPrice !== null && maxDayPassPrice !== undefined) {
+          if (facility.dayPassPrice === null || facility.dayPassPrice > maxDayPassPrice) {
+            return false
+          }
         }
-      }
 
-      return true
-    })
+        if (!matchesEquipment(facility, activeFilters.equipment)) return false
+
+        return true
+      })
+
+      if (!matchingFacilities.length) return results
+
+      results.push({
+        ...location,
+        facilityTypes: matchingFacilities,
+      })
+
+      return results
+    }, [])
   })
 
   return { filteredLocations }
